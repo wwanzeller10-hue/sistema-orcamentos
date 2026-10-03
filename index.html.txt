@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Orçamentos — Balcão & Nuvem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen p-3 md:p-8 font-sans">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 p-5 md:p-8">
+        
+        <!-- Cabeçalho -->
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Orçamento Rápido de Balcão</h1>
+                <p class="text-xs text-slate-500">Gráfica Rápida • Comunicação Visual • Malharia/Confecção</p>
+            </div>
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sistema Ativo
+            </span>
+        </div>
+
+        <form id="formOrcamento" class="space-y-5">
+            <!-- Dados do Cliente e Categoria -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nome do Cliente / Telefone</label>
+                    <input type="text" id="cliente" placeholder="Ex: João Silva (91) 98888-0000" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Segmento / Categoria</label>
+                    <select id="categoria" onchange="alternarCampos()" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="malharia">👕 Malharia / Uniformes (Sublimação / DTF)</option>
+                        <option value="comunicacao_visual">🖼️️ Comunicação Visual (Lona / Adesivo / m²)</option>
+                        <option value="grafica">📄 Gráfica Rápida (Papel / Cartão / Panfleto)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Descrição e Busca de Similares -->
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Descrição do Produto ou Serviço</label>
+                <input type="text" id="descricao" placeholder="Ex: Camiseta DryFit Sublimação Total ou Banner Lona 440g" onkeyup="buscarSimilares()" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <!-- Painel de Histórico (Carrega Orçamentos Parecidos) -->
+            <div id="painelSimilares" class="hidden bg-amber-50 border border-amber-300 rounded-lg p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-amber-800 uppercase flex items-center gap-1">
+                        💡 Orçamentos anteriores parecidos no banco:
+                    </span>
+                    <span class="text-[10px] text-amber-700">Clique para reaproveitar preço</span>
+                </div>
+                <div id="listaSimilares" class="space-y-1.5 text-xs text-amber-900"></div>
+            </div>
+
+            <!-- Medidas e Quantidades -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade</label>
+                    <input type="number" id="quantidade" value="1" min="1" onchange="recalcular()" onkeyup="recalcular()" required class="w-full p-2 border border-slate-300 rounded-md font-semibold text-center text-lg">
+                </div>
+                <div id="boxLargura" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Largura (metros)</label>
+                    <input type="number" step="0.01" id="largura" value="1.00" onchange="recalcular()" onkeyup="recalcular()" class="w-full p-2 border border-slate-300 rounded-md text-center">
+                </div>
+                <div id="boxAltura" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Altura (metros)</label>
+                    <input type="number" step="0.01" id="altura" value="1.00" onchange="recalcular()" onkeyup="recalcular()" class="w-full p-2 border border-slate-300 rounded-md text-center">
+                </div>
+            </div>
+
+            <!-- Resumo Financeiro Automático -->
+            <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-200 space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-600">
+                    <span>Custo Estimado de Insumos:</span>
+                    <span id="txtCustoMateriais" class="font-bold text-slate-700">R$ 0,00</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-blue-200">
+                    <div>
+                        <span class="text-sm font-bold text-slate-800">Preço Sugerido / Final:</span>
+                        <p class="text-[11px] text-slate-500">Com margem de lucro calculada</p>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-lg font-bold text-blue-700">R$</span>
+                        <input type="number" step="0.01" id="precoCobrado" class="w-36 p-1.5 border-2 border-blue-500 rounded-lg text-right font-extrabold text-xl text-blue-700 bg-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação Rápida -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
+                    💾 Salvar no Banco
+                </button>
+                <button type="button" onclick="gerarPropostaPDF()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
+                    📄 Baixar PDF
+                </button>
+                <button type="button" onclick="enviarWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
+                    📲 Enviar WhatsApp
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modelo Oculto para o PDF -->
+    <div class="hidden">
+        <div id="modeloPDF" class="p-8 bg-white font-sans text-slate-800">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">PROPOSTA COMERCIAL</h1>
+                    <p class="text-xs text-slate-500">Gráfica • Comunicação Visual • Malharia</p>
+                </div>
+                <div class="text-right text-xs text-slate-500">
+                    <p id="pdfData" class="font-bold text-slate-700"></p>
+                    <p>Validade: 7 dias</p>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-200">
+                <p class="text-sm"><strong>Cliente:</strong> <span id="pdfCliente"></span></p>
+            </div>
+            <table class="w-full text-left text-sm mb-8 border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 border-b border-slate-300 text-xs font-bold uppercase text-slate-600">
+                        <th class="p-3">Descrição do Produto / Serviço</th>
+                        <th class="p-3 text-center">Qtd</th>
+                        <th class="p-3 text-right">Valor Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-slate-200">
+                        <td class="p-3" id="pdfDescricao"></td>
+                        <td class="p-3 text-center font-bold" id="pdfQtd"></td>
+                        <td class="p-3 text-right font-bold text-blue-700" id="pdfValor"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="border-t pt-4 text-xs text-slate-500 space-y-1">
+                <p>• Produção iniciada mediante aprovação da arte e confirmação de sinal.</p>
+                <p>• Dúvidas ou alterações, entre em contato conosco.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CUSTOS_BASE = { malharia: 20.00, comunicacao_visual: 25.00, grafica: 0.25 };
+
+        function alternarCampos() {
+            const cat = document.getElementById('categoria').value;
+            const boxLargura = document.getElementById('boxLargura');
+            const boxAltura = document.getElementById('boxAltura');
+            if (cat === 'comunicacao_visual') {
+                boxLargura.classList.remove('hidden');
+                boxAltura.classList.remove('hidden');
+            } else {
+                boxLargura.classList.add('hidden');
+                boxAltura.classList.add('hidden');
+            }
+            recalcular();
+        }
+
+        function recalcular() {
+            const cat = document.getElementById('categoria').value;
+            const qtd = parseFloat(document.getElementById('quantidade').value) || 1;
+            let custoMateriais = 0;
+
+            if (cat === 'comunicacao_visual') {
+                const larg = parseFloat(document.getElementById('largura').value) || 0;
+                const alt = parseFloat(document.getElementById('altura').value) || 0;
+                custoMateriais = (larg * alt * qtd) * CUSTOS_BASE.comunicacao_visual;
+            } else {
+                custoMateriais = qtd * CUSTOS_BASE[cat];
+            }
+
+            const precoSugerido = custoMateriais * 2.0;
+            document.getElementById('txtCustoMateriais').innerText = `R$ ${custoMateriais.toFixed(2)}`;
+            document.getElementById('precoCobrado').value = precoSugerido.toFixed(2);
+        }
+
+        let timerBusca;
+        function buscarSimilares() {
+            clearTimeout(timerBusca);
+            timerBusca = setTimeout(async () => {
+                const cat = document.getElementById('categoria').value;
+                const desc = document.getElementById('descricao').value;
+                if (desc.length < 3) {
+                    document.getElementById('painelSimilares').classList.add('hidden');
+                    return;
+                }
+                const res = await fetch(`/api/orcamentos/similares?categoria=${cat}&descricao=${encodeURIComponent(desc)}`);
+                const dados = await res.json();
+                const painel = document.getElementById('painelSimilares');
+                const lista = document.getElementById('listaSimilares');
+                lista.innerHTML = '';
+
+                if (dados.length > 0) {
+                    painel.classList.remove('hidden');
+                    dados.forEach(item => {
+                        const dataFmt = new Date(item.data).toLocaleDateString('pt-BR');
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between items-center bg-white p-2 rounded border border-amber-200 cursor-pointer hover:bg-amber-100 transition';
+                        div.innerHTML = `<span><strong>${item.cliente}</strong> (${dataFmt}) — ${item.quantidade} un. de "${item.descricao}"</span><span class="font-bold text-amber-900">Cobrado: R$ ${parseFloat(item.preco_cobrado).toFixed(2)}</span>`;
+                        div.onclick = () => { document.getElementById('precoCobrado').value = parseFloat(item.preco_cobrado).toFixed(2); };
+                        lista.appendChild(div);
+                    });
+                } else {
+                    painel.classList.add('hidden');
+                }
+            }, 350);
+        }
+
+        document.getElementById('formOrcamento').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const dados = {
+                cliente: document.getElementById('cliente').value,
+                categoria: document.getElementById('categoria').value,
+                descricao: document.getElementById('descricao').value,
+                quantidade: parseInt(document.getElementById('quantidade').value),
+                largura: parseFloat(document.getElementById('largura').value) || null,
+                altura: parseFloat(document.getElementById('altura').value) || null,
+                custo_materiais: parseFloat(document.getElementById('txtCustoMateriais').innerText.replace('R$', '').trim()),
+                preco_cobrado: parseFloat(document.getElementById('precoCobrado').value)
+            };
+            const res = await fetch('/api/orcamentos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            if (res.ok) {
+                alert('✅ Orçamento gravado no banco de dados com sucesso!');
+                document.getElementById('painelSimilares').classList.add('hidden');
+            }
+        });
+
+        function gerarPropostaPDF() {
+            document.getElementById('pdfCliente').innerText = document.getElementById('cliente').value || 'Cliente Balcão';
+            document.getElementById('pdfDescricao').innerText = document.getElementById('descricao').value;
+            document.getElementById('pdfQtd').innerText = document.getElementById('quantidade').value;
+            document.getElementById('pdfValor').innerText = 'R$ ' + parseFloat(document.getElementById('precoCobrado').value).toFixed(2);
+            document.getElementById('pdfData').innerText = 'Data: ' + new Date().toLocaleDateString('pt-BR');
+
+            const elemento = document.getElementById('modeloPDF');
+            html2pdf().set({
+                margin: 10,
+                filename: `Orcamento_${document.getElementById('cliente').value || 'Balcao'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(elemento).save();
+        }
+
+        function enviarWhatsApp() {
+            const cliente = document.getElementById('cliente').value;
+            const desc = document.getElementById('descricao').value;
+            const qtd = document.getElementById('quantidade').value;
+            const preco = document.getElementById('precoCobrado').value;
+            const mensagem = `Olá *${cliente}*, tudo bem?\n\nSegue o orçamento referente ao seu pedido:\n• *Produto:* ${desc}\n• *Quantidade:* ${qtd}\n• *Valor Total:* R$ ${preco}\n\nFicamos no aguardo para aprovação e início da produção!`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+        }
+
+        alternarCampos();
+    </script>
+</body>
+</html>
