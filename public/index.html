@@ -1,265 +1,445 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Orçamentos — Balcão & Nuvem</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Orçamentos - Gráfica & Visual</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 min-h-screen p-3 md:p-8 font-sans">
-    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 p-5 md:p-8">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+  <!-- Header / Navbar Principal -->
+  <header class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white text-blue-700 p-2 rounded-lg font-bold text-xl">WGW</div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Sistema de Orçamentos</h1>
+          <p class="text-xs text-blue-200">Módulo Balcão & Precificação Rápida</p>
+        </div>
+      </div>
+      <nav class="flex space-x-1 bg-blue-800/60 p-1 rounded-lg text-sm">
+        <button class="px-3 py-1.5 rounded-md font-medium bg-white text-blue-700 shadow-sm flex items-center gap-2">
+          <i class="fa-solid fa-calculator font-bold"></i>
+          <span>Orçamentos</span>
+        </button>
+        <button class="px-3 py-1.5 rounded-md font-medium text-blue-200 hover:text-white transition opacity-50 cursor-not-allowed" title="Em breve">
+          <i class="fa-solid fa-boxes-packing"></i>
+          <span class="hidden md:inline">Pedidos</span>
+        </button>
+        <button class="px-3 py-1.5 rounded-md font-medium text-blue-200 hover:text-white transition opacity-50 cursor-not-allowed" title="Em breve">
+          <i class="fa-solid fa-chart-line"></i>
+          <span class="hidden md:inline">Financeiro</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- COLUNA ESQUERDA: Formulário da Calculadora -->
+    <section class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-file-circle-plus text-blue-600"></i>
+          Novo Orçamento
+        </h2>
+        <span class="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+          Custos Pré-Armados
+        </span>
+      </div>
+
+      <form id="formOrcamento" class="space-y-4">
+
+        <!-- Cliente e WhatsApp -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Cliente / Empresa</label>
+            <input type="text" id="cliente" required placeholder="Ex: João Silva ou Bloco Galo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp (com DDD)</label>
+            <input type="text" id="whatsapp" placeholder="Ex: 91988887777" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Categoria e Sub-Produto (Com Custos Pré-Armados) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria de Produção</label>
+            <select id="categoria" onchange="atualizarSubProdutos()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-700">
+              <option value="Visual">Comunicação Visual (Metragem / m²)</option>
+              <option value="Textil">Textil / Sublimação (Peça / Vestuário)</option>
+              <option value="Grafica">Impressão Rápida (Papelaria)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Material / Produto</label>
+            <select id="subProduto" onchange="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-700">
+              <!-- Preenchido via JavaScript -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Descrição Complementar -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Detalhes / Descrição Adicional</label>
+          <input type="text" id="descricao" required placeholder="Ex: Acabamento com Ilhós / Tamanho G / Papel Glossy" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <!-- Bloco de Dimensões / Quantidade -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Dimensões e Quantidades</span>
+            <span id="labelMetragemTotal" class="text-xs font-bold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded">0,00 m² total</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3">
+            <div id="boxLargura">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Largura (m)</label>
+              <input type="number" step="0.01" id="largura" value="1.00" oninput="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <div id="boxAltura">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Altura (m)</label>
+              <input type="number" step="0.01" id="altura" value="1.00" oninput="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade</label>
+              <input type="number" id="quantidade" value="1" min="1" oninput="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold">
+            </div>
+          </div>
+        </div>
+
+        <!-- Custo Calculado + Margem -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Custo Estimado Insumos (R$)</label>
+            <input type="number" step="0.01" id="custoMateriais" readonly class="w-full px-3 py-2 border border-slate-200 bg-slate-100 text-red-600 font-bold rounded-lg text-sm cursor-not-allowed">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Margem de Lucro (%)</label>
+            <input type="number" id="margemPorcentagem" value="100" oninput="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold">
+          </div>
+        </div>
+
+        <!-- Janelas de Comparação: Preço Sugerido vs Real Cobrado -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Precificação do Balcão</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Preço Sugerido (Calculado) -->
+            <div class="bg-blue-50/80 border border-blue-200 p-3 rounded-lg">
+              <label class="block text-xs font-bold text-blue-800 mb-1">💡 Preço Sugerido (Sistema)</label>
+              <input type="text" id="precoSugerido" readonly class="w-full bg-transparent text-lg font-extrabold text-blue-900 border-none outline-none p-0 cursor-default" value="R$ 0,00">
+              <span class="text-[10px] text-blue-600">Baseado no custo + margem configurada</span>
+            </div>
+
+            <!-- Preço Real Cobrado (Editável na hora) -->
+            <div class="bg-emerald-50 border border-emerald-300 p-3 rounded-lg">
+              <label class="block text-xs font-bold text-emerald-800 mb-1">🏷️ Preço Real Cobrado (R$)</label>
+              <input type="number" step="0.01" id="precoCobrado" oninput="atualizarResumoLucro()" required class="w-full border border-emerald-400 bg-white text-emerald-900 font-black text-lg px-2 py-1 rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <span class="text-[10px] text-emerald-700">Edite se aplicar desconto/arredondamento</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards de Resumo Rápido -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div class="bg-slate-100 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
+            <span class="text-xs text-slate-600 font-semibold">Preço por Unidade:</span>
+            <span id="resumoUnitario" class="text-sm font-bold text-slate-800">R$ 0,00</span>
+          </div>
+          <div class="bg-emerald-100/60 p-3 rounded-xl border border-emerald-200 flex justify-between items-center">
+            <span class="text-xs text-emerald-800 font-semibold">Lucro Real Estimado:</span>
+            <span id="resumoLucro" class="text-sm font-bold text-emerald-900">R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Salvar Orçamento
+          </button>
+          
+          <button type="button" onclick="enviarWhatsApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            Enviar no WhatsApp
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- COLUNA DIREITA: Memória de Orçamentos & Histórico -->
+    <section class="lg:col-span-5 space-y-6">
+
+      <!-- Consulta de Memória -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-magnifying-glass text-blue-600"></i>
+          Memória de Preços Similares
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">Pesquise para ver quanto cobrou anteriormente para este cliente ou produto.</p>
+
+        <div class="flex gap-2">
+          <input type="text" id="buscaMemoria" placeholder="Ex: Banner, Abadá, Cartão..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <button onclick="buscarSimilares()" class="px-4 py-2 bg-slate-800 text-white font-semibold rounded-lg text-sm hover:bg-slate-900 transition">
+            Buscar
+          </button>
+        </div>
+
+        <div id="listaMemoria" class="mt-4 space-y-2 max-h-48 overflow-y-auto">
+          <p class="text-xs text-slate-400 text-center py-4">Digite o termo para consultar o histórico.</p>
+        </div>
+      </div>
+
+      <!-- Histórico Recente -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+            Últimos Orçamentos
+          </h3>
+          <button onclick="carregarUltimos()" class="text-xs text-blue-600 hover:underline">Atualizar</button>
+        </div>
+
+        <div id="listaUltimos" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+          <p class="text-xs text-slate-400 text-center py-4">Carregando histórico...</p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // TABELA DE CUSTOS PRÉ-ARMADOS (Altere os valores de custo base conforme seu estoque)
+    const tabelaCustos = {
+      Visual: [
+        { nome: 'Lona 440g / Banner', custoUnid: 18.00, unidade: 'm²' },
+        { nome: 'Adesivo Vinil Brilho/Fosco', custoUnid: 22.00, unidade: 'm²' },
+        { nome: 'Lona Translucida / Backlight', custoUnid: 35.00, unidade: 'm²' },
+        { nome: 'Adesivo Perfurado', custoUnid: 28.00, unidade: 'm²' },
+        { nome: 'Tecido Failet / Bandeira', custoUnid: 15.00, unidade: 'm²' }
+      ],
+      Textil: [
+        { nome: 'Abadá Helanquinha (Sublimado)', custoUnid: 9.50, unidade: 'peça' },
+        { nome: 'Camisa DryFit Esportiva', custoUnid: 16.00, unidade: 'peça' },
+        { nome: 'Camisa Algodão / DTF', custoUnid: 18.50, unidade: 'peça' },
+        { nome: 'Bandeira Tecido Sublimada', custoUnid: 12.00, unidade: 'peça' }
+      ],
+      Grafica: [
+        { nome: 'Cartão de Visita 300g (1000un)', custoUnid: 45.00, unidade: 'cento/mil' },
+        { nome: 'Panfleto Couché 115g (1000un)', custoUnid: 85.00, unidade: 'cento/mil' },
+        { nome: 'Adesivos Recortados (Folha A3)', custoUnid: 6.00, unidade: 'folha' }
+      ]
+    };
+
+    // Atualiza opções do select com base na categoria
+    function atualizarSubProdutos() {
+      const cat = document.getElementById('categoria').value;
+      const selectSub = document.getElementById('subProduto');
+      const boxLargura = document.getElementById('boxLargura');
+      const boxAltura = document.getElementById('boxAltura');
+      const labelMetragem = document.getElementById('labelMetragemTotal');
+
+      selectSub.innerHTML = tabelaCustos[cat].map((item, index) => 
+        `<option value="${index}">${item.nome} (${item.unidade})</option>`
+      ).join('');
+
+      if (cat === 'Visual') {
+        boxLargura.style.display = 'block';
+        boxAltura.style.display = 'block';
+        labelMetragem.style.display = 'inline-block';
+      } else {
+        boxLargura.style.display = 'none';
+        boxAltura.style.display = 'none';
+        labelMetragem.style.display = 'none';
+      }
+
+      calcularPreco();
+    }
+
+    // Função de cálculo automático
+    function calcularPreco() {
+      const cat = document.getElementById('categoria').value;
+      const subIndex = document.getElementById('subProduto').value || 0;
+      const itemSelecionado = tabelaCustos[cat][subIndex] || tabelaCustos[cat][0];
+
+      const qtd = parseFloat(document.getElementById('quantidade').value) || 1;
+      const margem = parseFloat(document.getElementById('margemPorcentagem').value) || 0;
+
+      let custoTotalInsumos = 0;
+
+      if (cat === 'Visual') {
+        const larg = parseFloat(document.getElementById('largura').value) || 0;
+        const alt = parseFloat(document.getElementById('altura').value) || 0;
+        const metragemTotal = larg * alt * qtd;
+        document.getElementById('labelMetragemTotal').innerText = `${metragemTotal.toFixed(2).replace('.', ',')} m² total`;
         
-        <!-- Cabeçalho -->
-        <div class="flex justify-between items-center border-b pb-4 mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800">Orçamento Rápido de Balcão</h1>
-                <p class="text-xs text-slate-500">Gráfica Rápida • Comunicação Visual • Malharia/Confecção</p>
-            </div>
-            <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sistema Ativo
-            </span>
-        </div>
+        custoTotalInsumos = metragemTotal * itemSelecionado.custoUnid;
+      } else {
+        custoTotalInsumos = qtd * itemSelecionado.custoUnid;
+      }
 
-        <form id="formOrcamento" class="space-y-5">
-            <!-- Dados do Cliente e Categoria -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nome do Cliente / Telefone</label>
-                    <input type="text" id="cliente" placeholder="Ex: João Silva (91) 98888-0000" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Segmento / Categoria</label>
-                    <select id="categoria" onchange="alternarCampos()" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option value="malharia">👕 Malharia / Uniformes (Sublimação / DTF)</option>
-                        <option value="comunicacao_visual">🖼️️ Comunicação Visual (Lona / Adesivo / m²)</option>
-                        <option value="grafica">📄 Gráfica Rápida (Papel / Cartão / Panfleto)</option>
-                    </select>
-                </div>
-            </div>
+      // Preenche o Custo Insumos
+      document.getElementById('custoMateriais').value = custoTotalInsumos.toFixed(2);
 
-            <!-- Descrição e Busca de Similares -->
-            <div>
-                <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Descrição do Produto ou Serviço</label>
-                <input type="text" id="descricao" placeholder="Ex: Camiseta DryFit Sublimação Total ou Banner Lona 440g" onkeyup="buscarSimilares()" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
+      // Preço Sugerido (Custo + Margem)
+      const valorSugerido = custoTotalInsumos + (custoTotalInsumos * (margem / 100));
+      document.getElementById('precoSugerido').value = `R$ ${valorSugerido.toFixed(2).replace('.', ',')}`;
 
-            <!-- Painel de Histórico (Carrega Orçamentos Parecidos) -->
-            <div id="painelSimilares" class="hidden bg-amber-50 border border-amber-300 rounded-lg p-3">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-amber-800 uppercase flex items-center gap-1">
-                        💡 Orçamentos anteriores parecidos no banco:
-                    </span>
-                    <span class="text-[10px] text-amber-700">Clique para reaproveitar preço</span>
-                </div>
-                <div id="listaSimilares" class="space-y-1.5 text-xs text-amber-900"></div>
-            </div>
+      // Preenche inicialmente o Preço Cobrado com o valor sugerido
+      document.getElementById('precoCobrado').value = valorSugerido.toFixed(2);
 
-            <!-- Medidas e Quantidades -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade</label>
-                    <input type="number" id="quantidade" value="1" min="1" onchange="recalcular()" onkeyup="recalcular()" required class="w-full p-2 border border-slate-300 rounded-md font-semibold text-center text-lg">
-                </div>
-                <div id="boxLargura" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Largura (metros)</label>
-                    <input type="number" step="0.01" id="largura" value="1.00" onchange="recalcular()" onkeyup="recalcular()" class="w-full p-2 border border-slate-300 rounded-md text-center">
-                </div>
-                <div id="boxAltura" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Altura (metros)</label>
-                    <input type="number" step="0.01" id="altura" value="1.00" onchange="recalcular()" onkeyup="recalcular()" class="w-full p-2 border border-slate-300 rounded-md text-center">
-                </div>
-            </div>
+      atualizarResumoLucro();
+    }
 
-            <!-- Resumo Financeiro Automático -->
-            <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-200 space-y-3">
-                <div class="flex justify-between items-center text-xs text-slate-600">
-                    <span>Custo Estimado de Insumos:</span>
-                    <span id="txtCustoMateriais" class="font-bold text-slate-700">R$ 0,00</span>
-                </div>
-                <div class="flex justify-between items-center pt-2 border-t border-blue-200">
-                    <div>
-                        <span class="text-sm font-bold text-slate-800">Preço Sugerido / Final:</span>
-                        <p class="text-[11px] text-slate-500">Com margem de lucro calculada</p>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <span class="text-lg font-bold text-blue-700">R$</span>
-                        <input type="number" step="0.01" id="precoCobrado" class="w-36 p-1.5 border-2 border-blue-500 rounded-lg text-right font-extrabold text-xl text-blue-700 bg-white">
-                    </div>
-                </div>
-            </div>
+    // Recalcula o lucro e preço unitário com base no Preço Real Cobrado
+    function atualizarResumoLucro() {
+      const qtd = parseFloat(document.getElementById('quantidade').value) || 1;
+      const custo = parseFloat(document.getElementById('custoMateriais').value) || 0;
+      const precoCobrado = parseFloat(document.getElementById('precoCobrado').value) || 0;
 
-            <!-- Botões de Ação Rápida -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
-                    💾 Salvar no Banco
-                </button>
-                <button type="button" onclick="gerarPropostaPDF()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
-                    📄 Baixar PDF
-                </button>
-                <button type="button" onclick="enviarWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition flex justify-center items-center gap-2">
-                    📲 Enviar WhatsApp
-                </button>
-            </div>
-        </form>
-    </div>
+      const unitario = qtd > 0 ? precoCobrado / qtd : 0;
+      const lucroReal = precoCobrado - custo;
 
-    <!-- Modelo Oculto para o PDF -->
-    <div class="hidden">
-        <div id="modeloPDF" class="p-8 bg-white font-sans text-slate-800">
-            <div class="flex justify-between items-center border-b pb-4 mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">PROPOSTA COMERCIAL</h1>
-                    <p class="text-xs text-slate-500">Gráfica • Comunicação Visual • Malharia</p>
-                </div>
-                <div class="text-right text-xs text-slate-500">
-                    <p id="pdfData" class="font-bold text-slate-700"></p>
-                    <p>Validade: 7 dias</p>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-200">
-                <p class="text-sm"><strong>Cliente:</strong> <span id="pdfCliente"></span></p>
-            </div>
-            <table class="w-full text-left text-sm mb-8 border-collapse">
-                <thead>
-                    <tr class="bg-slate-100 border-b border-slate-300 text-xs font-bold uppercase text-slate-600">
-                        <th class="p-3">Descrição do Produto / Serviço</th>
-                        <th class="p-3 text-center">Qtd</th>
-                        <th class="p-3 text-right">Valor Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="border-b border-slate-200">
-                        <td class="p-3" id="pdfDescricao"></td>
-                        <td class="p-3 text-center font-bold" id="pdfQtd"></td>
-                        <td class="p-3 text-right font-bold text-blue-700" id="pdfValor"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="border-t pt-4 text-xs text-slate-500 space-y-1">
-                <p>• Produção iniciada mediante aprovação da arte e confirmação de sinal.</p>
-                <p>• Dúvidas ou alterações, entre em contato conosco.</p>
-            </div>
-        </div>
-    </div>
+      document.getElementById('resumoUnitario').innerText = `R$ ${unitario.toFixed(2).replace('.', ',')}`;
+      document.getElementById('resumoLucro').innerText = `R$ ${lucroReal.toFixed(2).replace('.', ',')}`;
+    }
 
-    <script>
-        const CUSTOS_BASE = { malharia: 20.00, comunicacao_visual: 25.00, grafica: 0.25 };
+    // Enviar via WhatsApp
+    function enviarWhatsApp() {
+      const cliente = document.getElementById('cliente').value || 'Cliente';
+      const fone = document.getElementById('whatsapp').value.replace(/\D/g, '');
+      const cat = document.getElementById('categoria').value;
+      const subIndex = document.getElementById('subProduto').value;
+      const produtoNome = tabelaCustos[cat][subIndex].nome;
+      const detalhe = document.getElementById('descricao').value;
+      const qtd = document.getElementById('quantidade').value;
+      const preco = document.getElementById('precoCobrado').value;
 
-        function alternarCampos() {
-            const cat = document.getElementById('categoria').value;
-            const boxLargura = document.getElementById('boxLargura');
-            const boxAltura = document.getElementById('boxAltura');
-            if (cat === 'comunicacao_visual') {
-                boxLargura.classList.remove('hidden');
-                boxAltura.classList.remove('hidden');
-            } else {
-                boxLargura.classList.add('hidden');
-                boxAltura.classList.add('hidden');
-            }
-            recalcular();
-        }
+      let mensagem = `*ORÇAMENTO - GRÁFICA WGW*%0A%0A`;
+      mensagem += `Olá, *${cliente}*! Segue o resumo do seu orçamento:%0A%0A`;
+      mensagem += `📌 *Item:* ${produtoNome} (${detalhe})%0A`;
+      mensagem += `📦 *Quantidade:* ${qtd} unidade(s)%0A`;
+      mensagem += `💰 *Valor Total:* R$ ${parseFloat(preco).toFixed(2).replace('.', ',')}%0A%0A`;
+      mensagem += `Ficamos à disposição para aprovar seu pedido! 👍`;
 
-        function recalcular() {
-            const cat = document.getElementById('categoria').value;
-            const qtd = parseFloat(document.getElementById('quantidade').value) || 1;
-            let custoMateriais = 0;
+      const link = fone ? `https://wa.me/55${fone}?text=${mensagem}` : `https://wa.me/?text=${mensagem}`;
+      window.open(link, '_blank');
+    }
 
-            if (cat === 'comunicacao_visual') {
-                const larg = parseFloat(document.getElementById('largura').value) || 0;
-                const alt = parseFloat(document.getElementById('altura').value) || 0;
-                custoMateriais = (larg * alt * qtd) * CUSTOS_BASE.comunicacao_visual;
-            } else {
-                custoMateriais = qtd * CUSTOS_BASE[cat];
-            }
+    // Salvar no Banco via API
+    document.getElementById('formOrcamento').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cat = document.getElementById('categoria').value;
+      const subIndex = document.getElementById('subProduto').value;
+      const produtoNome = tabelaCustos[cat][subIndex].nome;
+      const detalhe = document.getElementById('descricao').value;
 
-            const precoSugerido = custoMateriais * 2.0;
-            document.getElementById('txtCustoMateriais').innerText = `R$ ${custoMateriais.toFixed(2)}`;
-            document.getElementById('precoCobrado').value = precoSugerido.toFixed(2);
-        }
+      const payload = {
+        cliente: document.getElementById('cliente').value,
+        categoria: cat,
+        descricao: `${produtoNome} - ${detalhe}`,
+        quantidade: parseInt(document.getElementById('quantidade').value),
+        largura: parseFloat(document.getElementById('largura').value) || null,
+        altura: parseFloat(document.getElementById('altura').value) || null,
+        custo_materiais: parseFloat(document.getElementById('custoMateriais').value) || 0,
+        preco_cobrado: parseFloat(document.getElementById('precoCobrado').value)
+      };
 
-        let timerBusca;
-        function buscarSimilares() {
-            clearTimeout(timerBusca);
-            timerBusca = setTimeout(async () => {
-                const cat = document.getElementById('categoria').value;
-                const desc = document.getElementById('descricao').value;
-                if (desc.length < 3) {
-                    document.getElementById('painelSimilares').classList.add('hidden');
-                    return;
-                }
-                const res = await fetch(`/api/orcamentos/similares?categoria=${cat}&descricao=${encodeURIComponent(desc)}`);
-                const dados = await res.json();
-                const painel = document.getElementById('painelSimilares');
-                const lista = document.getElementById('listaSimilares');
-                lista.innerHTML = '';
-
-                if (dados.length > 0) {
-                    painel.classList.remove('hidden');
-                    dados.forEach(item => {
-                        const dataFmt = new Date(item.data).toLocaleDateString('pt-BR');
-                        const div = document.createElement('div');
-                        div.className = 'flex justify-between items-center bg-white p-2 rounded border border-amber-200 cursor-pointer hover:bg-amber-100 transition';
-                        div.innerHTML = `<span><strong>${item.cliente}</strong> (${dataFmt}) — ${item.quantidade} un. de "${item.descricao}"</span><span class="font-bold text-amber-900">Cobrado: R$ ${parseFloat(item.preco_cobrado).toFixed(2)}</span>`;
-                        div.onclick = () => { document.getElementById('precoCobrado').value = parseFloat(item.preco_cobrado).toFixed(2); };
-                        lista.appendChild(div);
-                    });
-                } else {
-                    painel.classList.add('hidden');
-                }
-            }, 350);
-        }
-
-        document.getElementById('formOrcamento').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const dados = {
-                cliente: document.getElementById('cliente').value,
-                categoria: document.getElementById('categoria').value,
-                descricao: document.getElementById('descricao').value,
-                quantidade: parseInt(document.getElementById('quantidade').value),
-                largura: parseFloat(document.getElementById('largura').value) || null,
-                altura: parseFloat(document.getElementById('altura').value) || null,
-                custo_materiais: parseFloat(document.getElementById('txtCustoMateriais').innerText.replace('R$', '').trim()),
-                preco_cobrado: parseFloat(document.getElementById('precoCobrado').value)
-            };
-            const res = await fetch('/api/orcamentos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dados)
-            });
-            if (res.ok) {
-                alert('✅ Orçamento gravado no banco de dados com sucesso!');
-                document.getElementById('painelSimilares').classList.add('hidden');
-            }
+      try {
+        const res = await fetch('/api/orcamentos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
+        if (res.ok) {
+          alert('✅ Orçamento salvo com sucesso!');
+          carregarUltimos();
+        } else {
+          alert('❌ Erro ao salvar orçamento.');
+        }
+      } catch (err) {
+        alert('❌ Falha de conexão: ' + err.message);
+      }
+    });
 
-        function gerarPropostaPDF() {
-            document.getElementById('pdfCliente').innerText = document.getElementById('cliente').value || 'Cliente Balcão';
-            document.getElementById('pdfDescricao').innerText = document.getElementById('descricao').value;
-            document.getElementById('pdfQtd').innerText = document.getElementById('quantidade').value;
-            document.getElementById('pdfValor').innerText = 'R$ ' + parseFloat(document.getElementById('precoCobrado').value).toFixed(2);
-            document.getElementById('pdfData').innerText = 'Data: ' + new Date().toLocaleDateString('pt-BR');
+    // Buscar Similares
+    async function buscarSimilares() {
+      const busca = document.getElementById('buscaMemoria').value;
+      const cat = document.getElementById('categoria').value;
+      const container = document.getElementById('listaMemoria');
 
-            const elemento = document.getElementById('modeloPDF');
-            html2pdf().set({
-                margin: 10,
-                filename: `Orcamento_${document.getElementById('cliente').value || 'Balcao'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(elemento).save();
+      if (!busca) return;
+
+      try {
+        const res = await fetch(`/api/orcamentos/similares?categoria=${cat}&descricao=${encodeURIComponent(busca)}`);
+        const dados = await res.json();
+
+        if (dados.length === 0) {
+          container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Nenhum histórico encontrado para "${busca}".</p>`;
+          return;
         }
 
-        function enviarWhatsApp() {
-            const cliente = document.getElementById('cliente').value;
-            const desc = document.getElementById('descricao').value;
-            const qtd = document.getElementById('quantidade').value;
-            const preco = document.getElementById('precoCobrado').value;
-            const mensagem = `Olá *${cliente}*, tudo bem?\n\nSegue o orçamento referente ao seu pedido:\n• *Produto:* ${desc}\n• *Quantidade:* ${qtd}\n• *Valor Total:* R$ ${preco}\n\nFicamos no aguardo para aprovação e início da produção!`;
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+        container.innerHTML = dados.map(item => `
+          <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-800">${item.cliente} - ${item.descricao}</p>
+              <p class="text-slate-500">Qtd: ${item.quantidade} | R$ ${item.preco_cobrado.toFixed(2)}</p>
+            </div>
+            <button type="button" onclick="copiarValor(${item.preco_cobrado})" class="px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded hover:bg-blue-200">
+              Usar Valor
+            </button>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<p class="text-xs text-red-500 text-center py-2">Erro ao carregar memória.</p>`;
+      }
+    }
+
+    function copiarValor(valor) {
+      document.getElementById('precoCobrado').value = valor;
+      atualizarResumoLucro();
+    }
+
+    // Carregar Últimos
+    async function carregarUltimos() {
+      const container = document.getElementById('listaUltimos');
+      try {
+        const res = await fetch('/api/orcamentos/similares?categoria=Visual&descricao=');
+        const dados = await res.json();
+
+        if (!dados || dados.length === 0) {
+          container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhum orçamento salvo ainda.</p>`;
+          return;
         }
 
-        alternarCampos();
-    </script>
+        container.innerHTML = dados.map(item => `
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold text-slate-800">${item.cliente}</p>
+              <p class="text-xs text-slate-500">${item.descricao} (${item.quantidade}x)</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-extrabold text-emerald-700">R$ ${item.preco_cobrado.toFixed(2)}</p>
+              <span class="text-[10px] text-slate-400">${item.categoria}</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Conectando ao banco...</p>`;
+      }
+    }
+
+    // Inicialização
+    atualizarSubProdutos();
+    carregarUltimos();
+  </script>
 </body>
 </html>
