@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Orçamentos - Gráfica & Visual</title>
+  <title>Sistema de Orçamentos - Gráfica WGW</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -57,8 +57,8 @@
         <!-- Cliente e WhatsApp -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div class="md:col-span-2">
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Cliente / Empresa</label>
-            <input type="text" id="cliente" required placeholder="Ex: João Silva ou Bloco Galo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Cliente / Empresa / Time</label>
+            <input type="text" id="cliente" required placeholder="Ex: Time do Galo / Marcely" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp (com DDD)</label>
@@ -66,7 +66,7 @@
           </div>
         </div>
 
-        <!-- Categoria e Sub-Produto (Com Custos Pré-Armados) -->
+        <!-- Categoria e Sub-Produto -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria de Produção</label>
@@ -79,15 +79,21 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Material / Produto</label>
             <select id="subProduto" onchange="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-700">
-              <!-- Preenchido via JavaScript -->
+              <!-- Preenchido via JS -->
             </select>
           </div>
         </div>
 
-        <!-- Descrição Complementar -->
+        <!-- Seção de Lista Têxtil / Descrição -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Detalhes / Descrição Adicional</label>
-          <input type="text" id="descricao" required placeholder="Ex: Acabamento com Ilhós / Tamanho G / Papel Glossy" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold text-slate-600">Lista do WhatsApp (Nomes, Números e Tamanhos)</label>
+            <button type="button" id="btnIaTextil" onclick="organizarTextoComIA()" class="text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 font-bold px-2.5 py-1 rounded-md flex items-center gap-1 transition">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Processar Lista do WhatsApp</span>
+            </button>
+          </div>
+          <textarea id="descricao" required rows="4" placeholder="Cole aqui a lista enviada pelo cliente no WhatsApp..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs leading-relaxed"></textarea>
         </div>
 
         <!-- Bloco de Dimensões / Quantidade -->
@@ -107,8 +113,8 @@
               <input type="number" step="0.01" id="altura" value="1.00" oninput="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade</label>
-              <input type="number" id="quantidade" value="1" min="1" oninput="calcularPreco()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Qtd Total (Peças)</label>
+              <input type="number" id="quantidade" value="1" min="1" oninput="calcularPreco()" class="w-full px-3 py-2 border border-blue-400 bg-blue-50/50 text-blue-900 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-extrabold">
             </div>
           </div>
         </div>
@@ -116,7 +122,7 @@
         <!-- Custo Calculado + Margem -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Custo Estimado Insumos (R$)</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Custo Insumos Pré-Armado (R$)</label>
             <input type="number" step="0.01" id="custoMateriais" readonly class="w-full px-3 py-2 border border-slate-200 bg-slate-100 text-red-600 font-bold rounded-lg text-sm cursor-not-allowed">
           </div>
           <div>
@@ -125,31 +131,29 @@
           </div>
         </div>
 
-        <!-- Janelas de Comparação: Preço Sugerido vs Real Cobrado -->
+        <!-- Preço Sugerido vs Real Cobrado -->
         <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
           <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Precificação do Balcão</span>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Preço Sugerido (Calculado) -->
             <div class="bg-blue-50/80 border border-blue-200 p-3 rounded-lg">
               <label class="block text-xs font-bold text-blue-800 mb-1">💡 Preço Sugerido (Sistema)</label>
               <input type="text" id="precoSugerido" readonly class="w-full bg-transparent text-lg font-extrabold text-blue-900 border-none outline-none p-0 cursor-default" value="R$ 0,00">
-              <span class="text-[10px] text-blue-600">Baseado no custo + margem configurada</span>
+              <span class="text-[10px] text-blue-600">Baseado no custo + margem</span>
             </div>
 
-            <!-- Preço Real Cobrado (Editável na hora) -->
             <div class="bg-emerald-50 border border-emerald-300 p-3 rounded-lg">
               <label class="block text-xs font-bold text-emerald-800 mb-1">🏷️ Preço Real Cobrado (R$)</label>
-              <input type="number" step="0.01" id="precoCobrado" oninput="atualizarResumoLucro()" required class="w-full border border-emerald-400 bg-white text-emerald-900 font-black text-lg px-2 py-1 rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-              <span class="text-[10px] text-emerald-700">Edite se aplicar desconto/arredondamento</span>
+              <input type="number" step="0.01" id="precoCobrado" oninput="atualizarResumoLucro()" required class="w-full border border-emerald-400 bg-white text-emerald-900 font-black text-xl px-2 py-1 rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <span class="text-[10px] text-emerald-700">Acrescente ou edite manualmente o valor final</span>
             </div>
           </div>
         </div>
 
-        <!-- Cards de Resumo Rápido -->
+        <!-- Resumo Rápido -->
         <div class="grid grid-cols-2 gap-3 pt-1">
           <div class="bg-slate-100 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
-            <span class="text-xs text-slate-600 font-semibold">Preço por Unidade:</span>
+            <span class="text-xs text-slate-600 font-semibold">Preço p/ Unidade:</span>
             <span id="resumoUnitario" class="text-sm font-bold text-slate-800">R$ 0,00</span>
           </div>
           <div class="bg-emerald-100/60 p-3 rounded-xl border border-emerald-200 flex justify-between items-center">
@@ -159,15 +163,20 @@
         </div>
 
         <!-- Botões de Ação -->
-        <div class="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+        <div class="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button type="button" onclick="limparFormulario()" class="py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-xs">
+            <i class="fa-solid fa-eraser"></i>
+            Limpar
+          </button>
+
+          <button type="submit" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5 text-xs">
             <i class="fa-solid fa-floppy-disk"></i>
             Salvar Orçamento
           </button>
           
-          <button type="button" onclick="enviarWhatsApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-brands fa-whatsapp text-lg"></i>
-            Enviar no WhatsApp
+          <button type="button" onclick="enviarWhatsApp()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5 text-xs">
+            <i class="fa-brands fa-whatsapp text-sm"></i>
+            Enviar WhatsApp
           </button>
         </div>
 
@@ -186,7 +195,7 @@
         <p class="text-xs text-slate-500 mb-3">Pesquise para ver quanto cobrou anteriormente para este cliente ou produto.</p>
 
         <div class="flex gap-2">
-          <input type="text" id="buscaMemoria" placeholder="Ex: Banner, Abadá, Cartão..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <input type="text" id="buscaMemoria" placeholder="Ex: Banner, Abadá, Camisa..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
           <button onclick="buscarSimilares()" class="px-4 py-2 bg-slate-800 text-white font-semibold rounded-lg text-sm hover:bg-slate-900 transition">
             Buscar
           </button>
@@ -217,7 +226,6 @@
   </main>
 
   <script>
-    // TABELA DE CUSTOS PRÉ-ARMADOS (Altere os valores de custo base conforme seu estoque)
     const tabelaCustos = {
       Visual: [
         { nome: 'Lona 440g / Banner', custoUnid: 18.00, unidade: 'm²' },
@@ -239,13 +247,13 @@
       ]
     };
 
-    // Atualiza opções do select com base na categoria
     function atualizarSubProdutos() {
       const cat = document.getElementById('categoria').value;
       const selectSub = document.getElementById('subProduto');
       const boxLargura = document.getElementById('boxLargura');
       const boxAltura = document.getElementById('boxAltura');
       const labelMetragem = document.getElementById('labelMetragemTotal');
+      const btnIa = document.getElementById('btnIaTextil');
 
       selectSub.innerHTML = tabelaCustos[cat].map((item, index) => 
         `<option value="${index}">${item.nome} (${item.unidade})</option>`
@@ -255,16 +263,22 @@
         boxLargura.style.display = 'block';
         boxAltura.style.display = 'block';
         labelMetragem.style.display = 'inline-block';
+        btnIa.style.display = 'none';
+      } else if (cat === 'Textil') {
+        boxLargura.style.display = 'none';
+        boxAltura.style.display = 'none';
+        labelMetragem.style.display = 'none';
+        btnIa.style.display = 'inline-flex';
       } else {
         boxLargura.style.display = 'none';
         boxAltura.style.display = 'none';
         labelMetragem.style.display = 'none';
+        btnIa.style.display = 'none';
       }
 
       calcularPreco();
     }
 
-    // Função de cálculo automático
     function calcularPreco() {
       const cat = document.getElementById('categoria').value;
       const subIndex = document.getElementById('subProduto').value || 0;
@@ -286,20 +300,15 @@
         custoTotalInsumos = qtd * itemSelecionado.custoUnid;
       }
 
-      // Preenche o Custo Insumos
       document.getElementById('custoMateriais').value = custoTotalInsumos.toFixed(2);
 
-      // Preço Sugerido (Custo + Margem)
       const valorSugerido = custoTotalInsumos + (custoTotalInsumos * (margem / 100));
       document.getElementById('precoSugerido').value = `R$ ${valorSugerido.toFixed(2).replace('.', ',')}`;
-
-      // Preenche inicialmente o Preço Cobrado com o valor sugerido
       document.getElementById('precoCobrado').value = valorSugerido.toFixed(2);
 
       atualizarResumoLucro();
     }
 
-    // Recalcula o lucro e preço unitário com base no Preço Real Cobrado
     function atualizarResumoLucro() {
       const qtd = parseFloat(document.getElementById('quantidade').value) || 1;
       const custo = parseFloat(document.getElementById('custoMateriais').value) || 0;
@@ -312,7 +321,49 @@
       document.getElementById('resumoLucro').innerText = `R$ ${lucroReal.toFixed(2).replace('.', ',')}`;
     }
 
-    // Enviar via WhatsApp
+    async function organizarTextoComIA() {
+      const descInput = document.getElementById('descricao');
+      const textoBruto = descInput.value.trim();
+
+      if (!textoBruto) {
+        alert('Por favor, cole a lista de camisas no campo antes de organizar.');
+        return;
+      }
+
+      const btnIa = document.getElementById('btnIaTextil');
+      btnIa.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+      btnIa.disabled = true;
+
+      try {
+        const response = await fetch('/api/organizar-textil', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto: textoBruto })
+        });
+
+        const data = await response.json();
+        if (data.sucesso) {
+          descInput.value = data.textoFormatado;
+          if (data.totalPecas && data.totalPecas > 0) {
+            document.getElementById('quantidade').value = data.totalPecas;
+            calcularPreco();
+          }
+        } else {
+          alert('Não foi possível organizar a lista via IA.');
+        }
+      } catch (err) {
+        alert('Erro ao conectar com a IA: ' + err.message);
+      } finally {
+        btnIa.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Processar Lista do WhatsApp';
+        btnIa.disabled = false;
+      }
+    }
+
+    function limparFormulario() {
+      document.getElementById('formOrcamento').reset();
+      atualizarSubProdutos();
+    }
+
     function enviarWhatsApp() {
       const cliente = document.getElementById('cliente').value || 'Cliente';
       const fone = document.getElementById('whatsapp').value.replace(/\D/g, '');
@@ -325,8 +376,9 @@
 
       let mensagem = `*ORÇAMENTO - GRÁFICA WGW*%0A%0A`;
       mensagem += `Olá, *${cliente}*! Segue o resumo do seu orçamento:%0A%0A`;
-      mensagem += `📌 *Item:* ${produtoNome} (${detalhe})%0A`;
-      mensagem += `📦 *Quantidade:* ${qtd} unidade(s)%0A`;
+      mensagem += `📌 *Item:* ${produtoNome}%0A`;
+      mensagem += `📦 *Quantidade Total:* ${qtd} peça(s)%0A%0A`;
+      mensagem += `📝 *Especificações / Lista:*%0A${encodeURIComponent(detalhe)}%0A%0A`;
       mensagem += `💰 *Valor Total:* R$ ${parseFloat(preco).toFixed(2).replace('.', ',')}%0A%0A`;
       mensagem += `Ficamos à disposição para aprovar seu pedido! 👍`;
 
@@ -334,7 +386,6 @@
       window.open(link, '_blank');
     }
 
-    // Salvar no Banco via API
     document.getElementById('formOrcamento').addEventListener('submit', async (e) => {
       e.preventDefault();
       const cat = document.getElementById('categoria').value;
@@ -345,7 +396,7 @@
       const payload = {
         cliente: document.getElementById('cliente').value,
         categoria: cat,
-        descricao: `${produtoNome} - ${detalhe}`,
+        descricao: `${produtoNome}\n${detalhe}`,
         quantidade: parseInt(document.getElementById('quantidade').value),
         largura: parseFloat(document.getElementById('largura').value) || null,
         altura: parseFloat(document.getElementById('altura').value) || null,
@@ -370,7 +421,6 @@
       }
     });
 
-    // Buscar Similares
     async function buscarSimilares() {
       const busca = document.getElementById('buscaMemoria').value;
       const cat = document.getElementById('categoria').value;
@@ -390,7 +440,7 @@
         container.innerHTML = dados.map(item => `
           <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs flex justify-between items-center">
             <div>
-              <p class="font-bold text-slate-800">${item.cliente} - ${item.descricao}</p>
+              <p class="font-bold text-slate-800">${item.cliente}</p>
               <p class="text-slate-500">Qtd: ${item.quantidade} | R$ ${item.preco_cobrado.toFixed(2)}</p>
             </div>
             <button type="button" onclick="copiarValor(${item.preco_cobrado})" class="px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded hover:bg-blue-200">
@@ -408,7 +458,6 @@
       atualizarResumoLucro();
     }
 
-    // Carregar Últimos
     async function carregarUltimos() {
       const container = document.getElementById('listaUltimos');
       try {
@@ -424,7 +473,7 @@
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
             <div>
               <p class="text-xs font-bold text-slate-800">${item.cliente}</p>
-              <p class="text-xs text-slate-500">${item.descricao} (${item.quantidade}x)</p>
+              <p class="text-xs text-slate-500">${item.quantidade}x peça(s)</p>
             </div>
             <div class="text-right">
               <p class="text-sm font-extrabold text-emerald-700">R$ ${item.preco_cobrado.toFixed(2)}</p>
@@ -437,7 +486,6 @@
       }
     }
 
-    // Inicialização
     atualizarSubProdutos();
     carregarUltimos();
   </script>
